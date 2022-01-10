@@ -82,77 +82,28 @@ if __name__ == '__main__':
     val_acc = accuracy_score(y_val, y_val_pred_lr)
     print("the accuracy score of the train is : {}, and the accuracy score of validation is : {}".format(tr_acc,val_acc))
 
+    #************************************************** train data******************************************************************
+    path = "./nlp-getting-started/test.csv"
+    #print(path)
+    test_data = pd.read_csv(path)
+   # print(test_data.head(10))
 
+    test_data['text_clean'] = test_data.text.map(cleanend_data)
+    del test_data['text']
 
-    '''print(nlp_train_data.columns)
-    print(nlp_train_data.text.head())
-    print(nlp_train_data.text[5])
-    print(nlp_train_data.text.shape)
-    print(nlp_train_data.target)
-    print(nlp_train_data.keyword.dropna().value_counts())
-    print(nlp_train_data.target.value_counts())
-    '''
-    '''
-    print(nlp_train_data.shape)
-    # make the data a little bit clean
-    raw_data = nlp_train_data.copy()
-    nlp_train_data['text_clean'] = nlp_train_data.text.map(cleanend_data)
-    del nlp_train_data['text']
-    # print(nlp_train_data.head())
-    y_data = nlp_train_data['target']
-    del nlp_train_data['target']
-
-    X_train, X_val, y_train, y_val = train_test_split(nlp_train_data, y_data, train_size=0.75, random_state=123)
-    # vectorize the text
-    # we can add some stop words here 
-    cv = CountVectorizer()
-    data_cv_train = cv.fit_transform(X_train.text_clean)
-    data_train_dtm = pd.DataFrame(data_cv_train.toarray(), columns=cv.get_feature_names())
-    data_train_dtm.index = X_train.index
-    data_cv_val = cv.transform(X_val.text_clean)
-    data_val_dtm = pd.DataFrame(data_cv_val.toarray(), columns=cv.get_feature_names())
-    data_val_dtm.index = X_val.index
-    print(data_train_dtm)
-    print(nlp_train_data.columns)
-    print(data_train_dtm.columns)
-
-    data_dtm_copy = data_train_dtm.copy()
-    del data_train_dtm['id']
-    del data_train_dtm['location']
-    del data_val_dtm['id']
-    del data_val_dtm['location']
-    print('id' in data_train_dtm.columns)
-    print('location' in data_train_dtm.columns)
-    print('keyword' in data_train_dtm.columns)
-    print('text_clean' in data_train_dtm.columns)
-    print('target' in data_train_dtm.columns)
-    print(data_train_dtm.shape)
-
-    colsum = data_train_dtm.sum()
-    print(colsum.shape)
-    print(colsum.describe())
-    print(colsum > 10 * colsum.mean())
-    stopwords = []
-    data_flt = []
-    tenthmean = (np.mean(colsum))
-    for column in data_train_dtm.columns:
-        if data_train_dtm[column].sum() > tenthmean:
-            stopwords.append(column)
-    data_train_filt = data_train_dtm.loc[:, stopwords]
-    data_val_filt = data_val_dtm.loc[:, stopwords]
-    print(len(stopwords))
-    print(data_train_filt.shape)
-    print(data_train_filt.head())
-
-    scaler2 = StandardScaler()
-    scaler2.fit(data_train_filt)
-    data_train_model = scaler2.transform(data_train_filt)
-    data_val_model = scaler2.transform(data_val_filt)
-
-    print(len(y_train))
-    print(data_val_filt)
-    classmodel = LogisticRegression()
-    classmodel.fit(data_train_filt, y_train)
-    y_train_pred_lr = classmodel.predict(data_train_model)
-    y_val_pred_lr = classmodel.predict(data_val_model)
-    '''
+    del test_data['location']
+    del test_data['keyword']
+    out_data=test_data.copy()
+    del out_data["text_clean"]
+    del test_data['id']
+    #print(test_data.columns)
+    #y_test_data=test_data['target'].copy()
+    #del test_data['target']
+    test_data = cv.transform(test_data.text_clean)
+    column_name = cv.get_feature_names_out()
+    X_test_vec=pd.DataFrame(test_data.toarray(),columns=column_name)
+    out_data["target"] = classmodel.predict(X_test_vec)
+    #test_acc = accuracy_score(y_test_data, y_test_pred_lr)
+    #print("the accuracy score of the test is : {}".format(test_acc))
+    print(out_data.head(10))
+    out_data.to_csv('./nlp-getting-started/predict.csv', index=False)
