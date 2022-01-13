@@ -60,116 +60,123 @@ def cleanend_data(text):
 
 if __name__ == '__main__':
 
-    path = "./nlp-getting-started/train.csv"
-    print(path)
-    raw_data = pd.read_csv(path)
-    #print(raw_data.head(10))
-    raw_data['text_clean'] = raw_data.text.map(cleanend_data)
+    # before everthing we need to assign flag for each part to work easier
+    #reading the file
+    read_flag=True
+    # executing some cleaning on the raw data
+    cleaning_flag=True
+    # count plot of target value to check that is unbalance or not
+    countplot_flag=True
+    # plot word cloud to see what word are most frequent in the tweets
+    wordcloud_flag=True
+    tain_val_split_flag=True
+    simple_logestic_flag=True
+    gridcv_logestic_flag=False
+    simple_SVM_flag=True
+    gridcv_SVM_flag=False
+    trainData_evaluation_flag=False
 
-    del raw_data['text']
-    del raw_data['id']
-    del raw_data['location']
-    del raw_data['keyword']
-    sns.countplot(x='target', data=raw_data)
-    plt.show()
-    #**** word cloud
-    #df = pd.DataFrame(raw_data[['text_clean', 'Tweet']])
+    if read_flag:
+        path = "./nlp-getting-started/train.csv"
+        print(path)
+        raw_data = pd.read_csv(path)
+        #print(raw_data.head(10))
 
-    Df_critical = raw_data[raw_data['target'] == 1]
-    Df_non_critical= raw_data[raw_data['target'] == 0]
+    if cleaning_flag:
+        raw_data['text_clean'] = raw_data.text.map(cleanend_data)
+        del raw_data['text']
+        del raw_data['id']
+        del raw_data['location']
+        del raw_data['keyword']
 
-    all_tweet = " ".join(review for review in raw_data.text_clean)
+    if countplot_flag:
+        sns.set_theme(style="darkgrid")
+        sns.countplot(x='target', data=raw_data)
+        plt.show()
 
-    mask = np.array(Image.open("./nlp-getting-started/twitter6.jpg"))
-    wordcloud = WordCloud(background_color="white", max_words=1000, mask=mask).generate(all_tweet)
-    #image_colors = ImageColorGenerator(mask)
-    plt.figure(figsize=[40,40])
-    plt.imshow(wordcloud, interpolation="bilinear")
-    plt.axis("off")
-    plt.show()
+    if wordcloud_flag:
+        all_tweet = " ".join(review for review in raw_data.text_clean)
+        mask = np.array(Image.open("./nlp-getting-started/twitter6.jpg"))
+        wordcloud = WordCloud(background_color="white", max_words=1000, mask=mask).generate(all_tweet)
+        #image_colors = ImageColorGenerator(mask)
+        plt.figure(figsize=[40,40])
+        plt.imshow(wordcloud, interpolation="bilinear")
+        plt.axis("off")
+        plt.show()
+        plt.savefig("./nlp-getting-started/wordcloud.png", format="png")
 
-    #wordcloud_ALL = WordCloud(background_color="white", max_words=1000, mask=mask).generate(all_tweet)
-    #plt.imshow(wordcloud_ALL, interpolation='bilinear')
-    # create coloring from image
-    #plt.figure(figsize=[7, 7])
-    #plt.imshow(wordcloud_ALL.recolor(color_func=image_colors), interpolation="bilinear")
-    #plt.axis("off")
-#*************************
-    # store to file
-    #plt.savefig("./nlp-getting-started/ita_wine.png", format="png")
-    #plt.show()
-    y_data=raw_data['target'].copy()
+    y_data = raw_data['target'].copy()
     del raw_data['target']
-    X_train, X_val, y_train, y_val = train_test_split(raw_data, y_data, train_size=0.75, random_state=123)
-    cv = CountVectorizer(stop_words="english",min_df=4)
-    X = cv.fit_transform(X_train.text_clean)
-    column_name=cv.get_feature_names_out()
-    X_tr_vec=pd.DataFrame(X.toarray(),columns=column_name)
-    X_val = cv.transform(X_val.text_clean)
-    column_name = cv.get_feature_names_out()
-    X_val_vec=pd.DataFrame(X_val.toarray(),columns=column_name)
-    #********************************************* Simple logestic regression ****************************************************
-    classmodel = LogisticRegression()
-    classmodel.fit(X_tr_vec, y_train)
-    y_train_pred_lr = classmodel.predict(X_tr_vec)
-    y_val_pred_lr = classmodel.predict(X_val_vec)
-    tr_acc = accuracy_score(y_train, y_train_pred_lr)
-    val_acc = accuracy_score(y_val, y_val_pred_lr)
-    print("the accuracy score of the train is : {}, and the accuracy score of validation is : {}".format(tr_acc,val_acc))
-    C = [0.001, 0.01, 0.1, 1.,1.5,2, 10, 100]
-    for c in C:
-        classmodel = LogisticRegression(C=c,max_iter = 200)
+
+    if tain_val_split_flag:
+        X_train, X_val, y_train, y_val = train_test_split(raw_data, y_data, train_size=0.75, random_state=123)
+        cv = CountVectorizer(stop_words="english",min_df=4)
+        X = cv.fit_transform(X_train.text_clean)
+        column_name=cv.get_feature_names_out()
+        X_tr_vec=pd.DataFrame(X.toarray(),columns=column_name)
+        X_val = cv.transform(X_val.text_clean)
+        column_name = cv.get_feature_names_out()
+        X_val_vec=pd.DataFrame(X_val.toarray(),columns=column_name)
+
+    if simple_logestic_flag:
+        classmodel = LogisticRegression()
         classmodel.fit(X_tr_vec, y_train)
         y_train_pred_lr = classmodel.predict(X_tr_vec)
         y_val_pred_lr = classmodel.predict(X_val_vec)
         tr_acc = accuracy_score(y_train, y_train_pred_lr)
         val_acc = accuracy_score(y_val, y_val_pred_lr)
+        print("the accuracy score of the train is : {}, and the accuracy score of validation is : {}".format(tr_acc,val_acc))
 
-        print(f"LR. C= {c}.\tTrain ACC: {tr_acc}\tVal Acc: {val_acc}")
-    #*************************************** SVM Method *************************************************
-    clf = svm.SVC(kernel='rbf',C=1)
-    clf.fit(X_tr_vec, y_train)
-    y_train_pred_lr = clf.predict(X_tr_vec)
-    y_val_pred_lr = clf.predict(X_val_vec)
-    tr_acc = accuracy_score(y_train, y_train_pred_lr)
-    val_acc = accuracy_score(y_val, y_val_pred_lr)
-    print(f"SVM method \tTrain ACC: {tr_acc}\tVal Acc: {val_acc}")
+    if gridcv_logestic_flag:
+        C = [0.001, 0.01, 0.1, 1.,1.5,2, 10, 100]
+        for c in C:
+            classmodel = LogisticRegression(C=c,max_iter = 200)
+            classmodel.fit(X_tr_vec, y_train)
+            y_train_pred_lr = classmodel.predict(X_tr_vec)
+            y_val_pred_lr = classmodel.predict(X_val_vec)
+            tr_acc = accuracy_score(y_train, y_train_pred_lr)
+            val_acc = accuracy_score(y_val, y_val_pred_lr)
+            print(f"LR. C= {c}.\tTrain ACC: {tr_acc}\tVal Acc: {val_acc}")
 
-    #**************************************************Gridcv for SVM*************************************
-    '''lr = svm.SVC(kernel='rbf')
-    cv = CountVectorizer(stop_words="english", min_df=3)
-    X = cv.fit_transform(raw_data.text_clean)
-    column_name = cv.get_feature_names_out()
-    X_all = pd.DataFrame(X.toarray(), columns=column_name)
-    parameters = {'kernel': ('linear', 'rbf'), 'C': [0.1,1, 10],'gamma': [0.1,1, 10]}
-    clf = GridSearchCV(lr, parameters,scoring = "accuracy",cv = 4)
-    clf.fit(X_all, y_data)
-    print("best Parameter is: {}".format(clf.best_params_))
-    print("best score is: {}".format(clf.best_score_))'''
+    if simple_SVM_flag:
+        clf = svm.SVC(kernel='rbf',C=1)
+        clf.fit(X_tr_vec, y_train)
+        y_train_pred_lr = clf.predict(X_tr_vec)
+        y_val_pred_lr = clf.predict(X_val_vec)
+        tr_acc = accuracy_score(y_train, y_train_pred_lr)
+        val_acc = accuracy_score(y_val, y_val_pred_lr)
+        print(f"SVM method \tTrain ACC: {tr_acc}\tVal Acc: {val_acc}")
+
+    if gridcv_SVM_flag:
+        lr = svm.SVC(kernel='rbf')
+        cv = CountVectorizer(stop_words="english", min_df=3)
+        X = cv.fit_transform(raw_data.text_clean)
+        column_name = cv.get_feature_names_out()
+        X_all = pd.DataFrame(X.toarray(), columns=column_name)
+        parameters = {'kernel': ('linear', 'rbf'), 'C': [0.1,1, 10],'gamma': [0.1,1, 10]}
+        clf = GridSearchCV(lr, parameters,scoring = "accuracy",cv = 4)
+        clf.fit(X_all, y_data)
+        print("best Parameter is: {}".format(clf.best_params_))
+        print("best score is: {}".format(clf.best_score_))
     '''y_train_pred_lr = clf.predict(X_tr_vec)
     y_val_pred_lr = clf.predict(X_val_vec)
     tr_acc = accuracy_score(y_train, y_train_pred_lr)
     val_acc = accuracy_score(y_val, y_val_pred_lr)
     print(f"SVM method \tTrain ACC: {tr_acc}\tVal Acc: {val_acc}")'''
-    #************************************************** train data ******************************************************************
-    path = "./nlp-getting-started/test.csv"
-    test_data = pd.read_csv(path)
-   # print(test_data.head(10))
-    test_data['text_clean'] = test_data.text.map(cleanend_data)
-    del test_data['text']
-    del test_data['location']
-    del test_data['keyword']
-    out_data=test_data.copy()
-    del out_data["text_clean"]
-    del test_data['id']
-    #print(test_data.columns)
-    #y_test_data=test_data['target'].copy()
-    #del test_data['target']
-    test_data = cv.transform(test_data.text_clean)
-    column_name = cv.get_feature_names_out()
-    X_test_vec=pd.DataFrame(test_data.toarray(),columns=column_name)
-    out_data["target"] = clf.predict(X_test_vec)
-    #test_acc = accuracy_score(y_test_data, y_test_pred_lr)
-    #print("the accuracy score of the test is : {}".format(test_acc))
-    print(out_data.head(10))
-    out_data.to_csv('./nlp-getting-started/predict.csv', index=False)
+
+    if trainData_evaluation_flag:
+        path = "./nlp-getting-started/test.csv"
+        test_data = pd.read_csv(path)
+        test_data['text_clean'] = test_data.text.map(cleanend_data)
+        del test_data['text']
+        del test_data['location']
+        del test_data['keyword']
+        out_data=test_data.copy()
+        del out_data["text_clean"]
+        del test_data['id']
+        test_data = cv.transform(test_data.text_clean)
+        column_name = cv.get_feature_names_out()
+        X_test_vec=pd.DataFrame(test_data.toarray(),columns=column_name)
+        out_data["target"] = clf.predict(X_test_vec)
+        print(out_data.head(10))
+        out_data.to_csv('./nlp-getting-started/predict.csv', index=False)
