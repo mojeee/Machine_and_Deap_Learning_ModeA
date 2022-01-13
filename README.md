@@ -5,6 +5,7 @@ Version 1.0
 #### Email: Mojtaba.amini.1995@gmail.com ####
 #### Supervisor: GIOVANNI DA SAN MARTINO
 #### Universita di Padova
+#### Machine and Deep Learning Mode A. Project
 
 Abstract
 -------------------------
