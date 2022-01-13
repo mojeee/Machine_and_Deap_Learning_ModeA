@@ -4,8 +4,9 @@ Version 1.0
 #### Author: Mojtaba Amini ####
 #### Email: Mojtaba.amini.1995@gmail.com ####
 #### Supervisor: GIOVANNI DA SAN MARTINO
-#### Universita di Padova
-#### Machine and Deep Learning Mode A. Project
+##### Universita di Padova
+##### Machine and Deep Learning Mode A. Project
+###### kaggle competition link : https://www.kaggle.com/c/nlp-getting-started
 
 Abstract
 -------------------------
@@ -16,7 +17,7 @@ The ubiquitousness of smartphones enables people to announce an emergency they�
 
 But, it’s not always clear whether a person’s words are actually announcing a disaster. Take this example:
 
-<img src="https://storage.googleapis.com/kaggle-media/competitions/tweet_screenshot.png" width="300" height="600" align="left"/> 
+<img src="https://storage.googleapis.com/kaggle-media/competitions/tweet_screenshot.png" width="200" height="400" align="left"/> 
 <br/><br/>
 The author explicitly uses the word “ABLAZE” but means it metaphorically. This is clear to a human right away, especially with the visual aid. But it’s less clear to a machine.
 
@@ -28,9 +29,6 @@ Acknowledgments
 This dataset was created by the company figure-eight and originally shared on their ‘Data For Everyone’ website here.
 
 Tweet source: https://twitter.com/AnyOtherAnnaK/status/629195955506708480
-<br/><br/>
-<br/><br/>
-<br/><br/>
 <br/><br/>
 <br/><br/>
 <br/>
