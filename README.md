@@ -33,7 +33,7 @@ Tweet source: https://twitter.com/AnyOtherAnnaK/status/629195955506708480
 <br/><br/>
 <br/><br/>
 <br/><br/>
-<br/><br/>
+
 
 
 For each record, it is provided:
