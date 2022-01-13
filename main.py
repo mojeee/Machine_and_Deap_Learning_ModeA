@@ -24,6 +24,7 @@ from sklearn.model_selection import GridSearchCV
 from nltk.corpus import stopwords
 nltk.download('stopwords')
 from nltk.tokenize import word_tokenize
+from PIL import Image
 
 
 import numpy as np
@@ -38,7 +39,7 @@ def cleanend_data(text):
     text_tokens = word_tokenize(text)
     all_stopwords = stopwords.words('english')
     more_stop=["https","tco","via","s","rt","st","w","im","re","m","d","v","a","b","c","e","f",
-               "g","h","lol","l","n","o","p","k","q","r","s","t","u","v","w","ll","ve","tco"]
+               "g","h","lol","l","n","o","p","k","q","r","s","t","u","v","w","ll","ve","tco","nt"]
     all_stopwords.extend(more_stop)
     tokens_without_sw = [word for word in text_tokens if not word in all_stopwords]
     text = (" ").join(tokens_without_sw)
@@ -79,18 +80,24 @@ if __name__ == '__main__':
 
     all_tweet = " ".join(review for review in raw_data.text_clean)
 
-    #mask = np.array(Image.open("./nlp-getting-started/Italy.png"))
-    wordcloud_ALL = WordCloud(max_font_size=50, max_words=1000, background_color="white").generate(all_tweet)
-    plt.imshow(wordcloud_ALL, interpolation='bilinear')
-    # create coloring from image
+    mask = np.array(Image.open("./nlp-getting-started/twitter6.jpg"))
+    wordcloud = WordCloud(background_color="white", max_words=1000, mask=mask).generate(all_tweet)
     #image_colors = ImageColorGenerator(mask)
-    #plt.figure(figsize=[7, 7])
-    #plt.imshow(wordcloud_ita.recolor(color_func=image_colors), interpolation="bilinear")
+    plt.figure(figsize=[40,40])
+    plt.imshow(wordcloud, interpolation="bilinear")
     plt.axis("off")
+    plt.show()
+
+    #wordcloud_ALL = WordCloud(background_color="white", max_words=1000, mask=mask).generate(all_tweet)
+    #plt.imshow(wordcloud_ALL, interpolation='bilinear')
+    # create coloring from image
+    #plt.figure(figsize=[7, 7])
+    #plt.imshow(wordcloud_ALL.recolor(color_func=image_colors), interpolation="bilinear")
+    #plt.axis("off")
 #*************************
     # store to file
-    #plt.savefig("img/ita_wine.png", format="png")
-    plt.show()
+    #plt.savefig("./nlp-getting-started/ita_wine.png", format="png")
+    #plt.show()
     y_data=raw_data['target'].copy()
     del raw_data['target']
     X_train, X_val, y_train, y_val = train_test_split(raw_data, y_data, train_size=0.75, random_state=123)
