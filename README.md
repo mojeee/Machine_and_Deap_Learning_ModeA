@@ -4,8 +4,8 @@ Version 1.0
 #### Author: Mojtaba Amini ####
 #### Email: Mojtaba.amini.1995@gmail.com ####
 #### Supervisor: GIOVANNI DA SAN MARTINO
-#### Universita di Padova
-#### Machine and Deep Learning Mode A. Project
+##### Universita di Padova
+##### Machine and Deep Learning Mode A. Project
 ###### kaggle competition link : https://www.kaggle.com/c/nlp-getting-started
 
 Abstract
