@@ -5,7 +5,8 @@
 """
 Today is December 21 
 Machine Learning Project for Course project of Machine Learning and Deep Learning
-This is my first try to do a complete python project as a Data Science Student 
+This is my first try to do a complete python project as a Data Science Student
+Today is january 13, I add word clound and use SVM
 """
 import inline as inline
 import matplotlib
@@ -66,13 +67,13 @@ if __name__ == '__main__':
     # executing some cleaning on the raw data
     cleaning_flag=True
     # count plot of target value to check that is unbalance or not
-    countplot_flag=True
+    countplot_flag=False
     # plot word cloud to see what word are most frequent in the tweets
     wordcloud_flag=True
     tain_val_split_flag=True
     simple_logestic_flag=True
     gridcv_logestic_flag=False
-    simple_SVM_flag=True
+    simple_SVM_flag=False
     gridcv_SVM_flag=False
     trainData_evaluation_flag=False
 
@@ -99,7 +100,7 @@ if __name__ == '__main__':
         mask = np.array(Image.open("./nlp-getting-started/twitter6.jpg"))
         wordcloud = WordCloud(background_color="white", max_words=1000, mask=mask).generate(all_tweet)
         #image_colors = ImageColorGenerator(mask)
-        plt.figure(figsize=[40,40])
+        plt.figure(figsize=[30,30])
         plt.imshow(wordcloud, interpolation="bilinear")
         plt.axis("off")
         plt.show()
