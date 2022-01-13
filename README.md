@@ -17,7 +17,7 @@ The ubiquitousness of smartphones enables people to announce an emergency they�
 
 But, it’s not always clear whether a person’s words are actually announcing a disaster. Take this example:
 
-<img src="https://storage.googleapis.com/kaggle-media/competitions/tweet_screenshot.png" width="200" height="350" align="left"/> 
+<img src="https://storage.googleapis.com/kaggle-media/competitions/tweet_screenshot.png" width="200" height="400" align="left"/> 
 <br/><br/>
 The author explicitly uses the word “ABLAZE” but means it metaphorically. This is clear to a human right away, especially with the visual aid. But it’s less clear to a machine.
 
@@ -31,7 +31,7 @@ This dataset was created by the company figure-eight and originally shared on th
 Tweet source: https://twitter.com/AnyOtherAnnaK/status/629195955506708480
 <br/><br/>
 <br/><br/>
-<br/><br/>
+<br/>
 
 
 For each record, it is provided:
