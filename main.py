@@ -26,7 +26,11 @@ from nltk.corpus import stopwords
 nltk.download('stopwords')
 from nltk.tokenize import word_tokenize
 from PIL import Image
-
+import tensorflow #the backend used by Keras (there are different beckend)
+from tensorflow.keras.models import Sequential #import the type of mpdel: sequential (e.g., MLP)
+from tensorflow.keras.layers import Input, Dense #simple linear layer
+from tensorflow.keras.utils import to_categorical # transformation for classification labels
+from keras.utils.vis_utils import plot_model
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -69,13 +73,15 @@ if __name__ == '__main__':
     # count plot of target value to check that is unbalance or not
     countplot_flag=False
     # plot word cloud to see what word are most frequent in the tweets
-    wordcloud_flag=True
-    tain_val_split_flag=True
-    simple_logestic_flag=True
+    wordcloud_flag=False
+    tain_val_split_flag=False
+    simple_logestic_flag=False
     gridcv_logestic_flag=False
     simple_SVM_flag=False
-    gridcv_SVM_flag=False
+    gridcv_SVM_flag=False# it doesn't need train_test split
+    NeuralNetworkFlag=True # it doesn't need train_test split
     trainData_evaluation_flag=False
+
 
     if read_flag:
         path = "./nlp-getting-started/train.csv"
@@ -164,6 +170,31 @@ if __name__ == '__main__':
     tr_acc = accuracy_score(y_train, y_train_pred_lr)
     val_acc = accuracy_score(y_val, y_val_pred_lr)
     print(f"SVM method \tTrain ACC: {tr_acc}\tVal Acc: {val_acc}")'''
+    if NeuralNetworkFlag:
+
+        cv = CountVectorizer(stop_words="english",min_df=4)
+        X = cv.fit_transform(raw_data.text_clean)
+        column_name=cv.get_feature_names_out()
+        X_tr_vec_NN=pd.DataFrame(X.toarray(),columns=column_name)
+        feature_vector_length = X_tr_vec_NN.shape[1]
+        print(X_tr_vec_NN.shape[1])
+        num_classes = 2 # fake or not fake
+        y_train_NN = to_categorical(y_data, num_classes)
+
+        model = Sequential()  # we first define how the "model" looks like
+        model.add(Dense(input_dim=feature_vector_length, units=10, activation='relu'))  # input layer
+        model.add(Dense(units=10, activation='relu'))  # input layer
+        model.add(Dense(num_classes, activation='softmax'))  # output layer
+        print(model.summary())
+        #plot_model(model, show_shapes=True)
+        # Configure the model and start training
+        model.compile(loss='categorical_crossentropy',  # loss metric
+                      optimizer='sgd',  # optimizer
+                      metrics=['accuracy'])  # displayed metric
+        model.fit(X_tr_vec_NN, y_train_NN, epochs=10, batch_size=4, verbose=1, validation_split=0.25)
+        # see the testing performance
+        #test_results = model.evaluate(X_test, y_test_cat, verbose=1)
+        #print(f'Test results - Loss: {test_results[0]} - Accuracy: {test_results[1]}%')
 
     if trainData_evaluation_flag:
         path = "./nlp-getting-started/test.csv"
