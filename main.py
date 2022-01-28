@@ -31,6 +31,7 @@ from tensorflow.keras.models import Sequential #import the type of mpdel: sequen
 from tensorflow.keras.layers import Input, Dense #simple linear layer
 from tensorflow.keras.utils import to_categorical # transformation for classification labels
 from keras.utils.vis_utils import plot_model
+from keras.wrappers.scikit_learn import KerasClassifier
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -80,7 +81,8 @@ if __name__ == '__main__':
     simple_SVM_flag=False
     gridcv_SVM_flag=False# it doesn't need train_test split
     NeuralNetworkFlag=True # it doesn't need train_test split
-    trainData_evaluation_flag=False
+    optimization_NN_flag=False # it doesn't need train_test split
+    trainData_evaluation_flag=True
 
 
     if read_flag:
@@ -126,10 +128,10 @@ if __name__ == '__main__':
         X_val_vec=pd.DataFrame(X_val.toarray(),columns=column_name)
 
     if simple_logestic_flag:
-        classmodel = LogisticRegression()
-        classmodel.fit(X_tr_vec, y_train)
-        y_train_pred_lr = classmodel.predict(X_tr_vec)
-        y_val_pred_lr = classmodel.predict(X_val_vec)
+        clf = LogisticRegression()
+        clf.fit(X_tr_vec, y_train)
+        y_train_pred_lr = clf.predict(X_tr_vec)
+        y_val_pred_lr = clf.predict(X_val_vec)
         tr_acc = accuracy_score(y_train, y_train_pred_lr)
         val_acc = accuracy_score(y_val, y_val_pred_lr)
         print("the accuracy score of the train is : {}, and the accuracy score of validation is : {}".format(tr_acc,val_acc))
@@ -181,20 +183,73 @@ if __name__ == '__main__':
         num_classes = 2 # fake or not fake
         y_train_NN = to_categorical(y_data, num_classes)
 
-        model = Sequential()  # we first define how the "model" looks like
-        model.add(Dense(input_dim=feature_vector_length, units=10, activation='relu'))  # input layer
-        model.add(Dense(units=10, activation='relu'))  # input layer
-        model.add(Dense(num_classes, activation='softmax'))  # output layer
-        print(model.summary())
+        clf = Sequential()  # we first define how the "model" looks like
+        clf.add(Dense(input_dim=feature_vector_length, units=10, activation='relu'))  # input layer
+        clf.add(Dense(units=10, activation='relu'))  # input layer
+        clf.add(Dense(num_classes, activation='softmax'))  # output layer
+        print(clf.summary())
         #plot_model(model, show_shapes=True)
         # Configure the model and start training
-        model.compile(loss='categorical_crossentropy',  # loss metric
+        clf.compile(loss='categorical_crossentropy',  # loss metric
                       optimizer='sgd',  # optimizer
                       metrics=['accuracy'])  # displayed metric
-        model.fit(X_tr_vec_NN, y_train_NN, epochs=10, batch_size=4, verbose=1, validation_split=0.25)
+        history=clf.fit(X_tr_vec_NN, y_train_NN, epochs=4, batch_size=4, verbose=1, validation_split=0.25)
+        # summarize history for accuracy
+        plt.plot(history.history['accuracy'])
+        plt.plot(history.history['val_accuracy'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'val'], loc='upper left')
+        # plt.ylim(0.8, 1)
+        plt.show()
+        # summarize history for accuracy
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'val'], loc='upper left')
+        # plt.ylim(0.8, 1)
+        plt.show()
         # see the testing performance
         #test_results = model.evaluate(X_test, y_test_cat, verbose=1)
         #print(f'Test results - Loss: {test_results[0]} - Accuracy: {test_results[1]}%')
+    if optimization_NN_flag:
+        cv = CountVectorizer(stop_words="english",min_df=4)
+        X = cv.fit_transform(raw_data.text_clean)
+        column_name=cv.get_feature_names_out()
+        X_tr_vec_NNOP=pd.DataFrame(X.toarray(),columns=column_name)
+        feature_vector_length = X_tr_vec_NNOP.shape[1]
+        print(X_tr_vec_NNOP.shape[1])
+        num_classes = 2 # fake or not fake
+        y_train_NNOP = to_categorical(y_data, num_classes)
+
+        def create_model():
+            # create model
+            model = Sequential()
+            model.add(Dense(input_dim=feature_vector_length, units=10, activation='relu'))  # input layer
+            model.add(Dense(units=10, activation='relu'))  # input layer
+            model.add(Dense(num_classes, activation='softmax'))  # output layer
+            model.compile(loss='categorical_crossentropy',  # loss metric
+                          optimizer='sgd',  # optimizer
+                          metrics=['accuracy'])  # displayed metric
+            return model
+
+        model = KerasClassifier(build_fn=create_model, verbose=0)
+        # define the grid search parameters
+        batch_size = [4, 8, 16, 20]
+        epochs = [5,10, 20]
+        param_grid = dict(batch_size=batch_size, epochs=epochs)
+        grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv=3)
+        grid_result = grid.fit(X_tr_vec_NNOP, y_train_NNOP)
+        # summarize results
+        print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
+        means = grid_result.cv_results_['mean_test_score']
+        stds = grid_result.cv_results_['std_test_score']
+        params = grid_result.cv_results_['params']
+        for mean, stdev, param in zip(means, stds, params):
+            print("%f (%f) with: %r" % (mean, stdev, param))
 
     if trainData_evaluation_flag:
         path = "./nlp-getting-started/test.csv"
@@ -209,6 +264,9 @@ if __name__ == '__main__':
         test_data = cv.transform(test_data.text_clean)
         column_name = cv.get_feature_names_out()
         X_test_vec=pd.DataFrame(test_data.toarray(),columns=column_name)
-        out_data["target"] = clf.predict(X_test_vec)
+        if simple_logestic_flag or simple_SVM_flag:
+            out_data["target"] = clf.predict(X_test_vec)
+        elif NeuralNetworkFlag:
+            #out_data["target"]=clf.pridect_classes(X_test_vec)
         print(out_data.head(10))
         out_data.to_csv('./nlp-getting-started/predict.csv', index=False)
