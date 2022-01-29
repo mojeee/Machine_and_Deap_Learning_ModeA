@@ -31,6 +31,7 @@ from tensorflow.keras.models import Sequential #import the type of mpdel: sequen
 from tensorflow.keras.layers import Input, Dense #simple linear layer
 from tensorflow.keras.utils import to_categorical # transformation for classification labels
 from keras.utils.vis_utils import plot_model
+from sklearn.neighbors import KNeighborsClassifier
 from keras.wrappers.scikit_learn import KerasClassifier
 
 import numpy as np
@@ -75,14 +76,15 @@ if __name__ == '__main__':
     countplot_flag=False
     # plot word cloud to see what word are most frequent in the tweets
     wordcloud_flag=False
-    tain_val_split_flag=False
+    tain_val_split_flag=True
     simple_logestic_flag=False
+    KNN_flag=True
     gridcv_logestic_flag=False
     simple_SVM_flag=False
     gridcv_SVM_flag=False# it doesn't need train_test split
-    NeuralNetworkFlag=True # it doesn't need train_test split
+    NeuralNetworkFlag=False # it doesn't need train_test split
     optimization_NN_flag=False # it doesn't need train_test split
-    trainData_evaluation_flag=True
+    trainData_evaluation_flag=False
 
 
     if read_flag:
@@ -146,6 +148,24 @@ if __name__ == '__main__':
             tr_acc = accuracy_score(y_train, y_train_pred_lr)
             val_acc = accuracy_score(y_val, y_val_pred_lr)
             print(f"LR. C= {c}.\tTrain ACC: {tr_acc}\tVal Acc: {val_acc}")
+    if KNN_flag:
+        accuracy_values_train = []
+        accuracy_values_test = []
+        k_values = range(1, 15)
+        for k in k_values:
+            model = KNeighborsClassifier(n_neighbors=k)
+            model.fit(X_tr_vec, y_train)
+            y_pred_train = model.predict(X_tr_vec)
+            y_pred_val = model.predict(X_val_vec)
+            accuracy_values_train.append(accuracy_score(y_pred_train, y_train))
+            accuracy_values_test.append(accuracy_score(y_pred_val, y_val))
+        fig = plt.figure(figsize=(6, 4))
+        plt.plot(k_values, accuracy_values_train, label="train")
+        plt.plot(k_values, accuracy_values_test, label="test")
+        plt.xlabel("K")
+        plt.ylabel("Accuracy")
+        plt.legend()
+        plt.show()
 
     if simple_SVM_flag:
         clf = svm.SVC(kernel='rbf',C=1)
@@ -267,6 +287,6 @@ if __name__ == '__main__':
         if simple_logestic_flag or simple_SVM_flag:
             out_data["target"] = clf.predict(X_test_vec)
         elif NeuralNetworkFlag:
-            #out_data["target"]=clf.pridect_classes(X_test_vec)
+            out_data["target"]=clf.pridect_classes(X_test_vec)
         print(out_data.head(10))
         out_data.to_csv('./nlp-getting-started/predict.csv', index=False)
