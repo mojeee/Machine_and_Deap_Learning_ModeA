@@ -76,14 +76,14 @@ if __name__ == '__main__':
     countplot_flag=False
     # plot word cloud to see what word are most frequent in the tweets
     wordcloud_flag=False
-    tain_val_split_flag=True
+    tain_val_split_flag=False
     simple_logestic_flag=False
-    KNN_flag=True
     gridcv_logestic_flag=False
+    KNN_flag = False
     simple_SVM_flag=False
     gridcv_SVM_flag=False# it doesn't need train_test split
-    NeuralNetworkFlag=False # it doesn't need train_test split
-    optimization_NN_flag=False # it doesn't need train_test split
+    NeuralNetworkFlag=False# it doesn't need train_test split
+    optimization_NN_flag=True # it doesn't need train_test split
     trainData_evaluation_flag=False
 
 
@@ -139,15 +139,26 @@ if __name__ == '__main__':
         print("the accuracy score of the train is : {}, and the accuracy score of validation is : {}".format(tr_acc,val_acc))
 
     if gridcv_logestic_flag:
-        C = [0.001, 0.01, 0.1, 1.,1.5,2, 10, 100]
+        C = [0.001, 0.01, 0.1, 1.,1.5,2, 10]
+        tr_acc=[]
+        val_acc=[]
         for c in C:
-            classmodel = LogisticRegression(C=c,max_iter = 200)
-            classmodel.fit(X_tr_vec, y_train)
-            y_train_pred_lr = classmodel.predict(X_tr_vec)
-            y_val_pred_lr = classmodel.predict(X_val_vec)
-            tr_acc = accuracy_score(y_train, y_train_pred_lr)
-            val_acc = accuracy_score(y_val, y_val_pred_lr)
-            print(f"LR. C= {c}.\tTrain ACC: {tr_acc}\tVal Acc: {val_acc}")
+            model = LogisticRegression(C=c,max_iter = 200)
+            model.fit(X_tr_vec, y_train)
+            y_train_pred_lr = model.predict(X_tr_vec)
+            y_val_pred_lr = model.predict(X_val_vec)
+            tr_acc.append(accuracy_score(y_train, y_train_pred_lr))
+            val_acc.append(accuracy_score(y_val, y_val_pred_lr))
+            print(f"LR. C= {c}.\tTrain ACC: {accuracy_score(y_train, y_train_pred_lr)}\tVal Acc: {accuracy_score(y_val, y_val_pred_lr)}")
+        fig = plt.figure(figsize=(6, 4))
+        plt.plot(C,tr_acc, label="train")
+        plt.plot(C,val_acc,label="validation")
+        plt.xlabel("Inverse of Regularization parameter")
+        plt.ylabel("Accuracy")
+        plt.title("GridCV of Logistic Regression")
+        plt.legend()
+        plt.show()
+
     if KNN_flag:
         accuracy_values_train = []
         accuracy_values_test = []
@@ -213,7 +224,7 @@ if __name__ == '__main__':
         clf.compile(loss='categorical_crossentropy',  # loss metric
                       optimizer='sgd',  # optimizer
                       metrics=['accuracy'])  # displayed metric
-        history=clf.fit(X_tr_vec_NN, y_train_NN, epochs=4, batch_size=4, verbose=1, validation_split=0.25)
+        history=clf.fit(X_tr_vec_NN, y_train_NN, epochs=20, batch_size=4, verbose=1, validation_split=0.25)
         # summarize history for accuracy
         plt.plot(history.history['accuracy'])
         plt.plot(history.history['val_accuracy'])
@@ -284,9 +295,7 @@ if __name__ == '__main__':
         test_data = cv.transform(test_data.text_clean)
         column_name = cv.get_feature_names_out()
         X_test_vec=pd.DataFrame(test_data.toarray(),columns=column_name)
-        if simple_logestic_flag or simple_SVM_flag:
-            out_data["target"] = clf.predict(X_test_vec)
-        elif NeuralNetworkFlag:
+        if ~ NeuralNetworkFlag:
             out_data["target"]=clf.pridect_classes(X_test_vec)
         print(out_data.head(10))
         out_data.to_csv('./nlp-getting-started/predict.csv', index=False)
