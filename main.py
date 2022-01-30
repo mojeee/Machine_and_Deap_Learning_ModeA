@@ -76,15 +76,15 @@ if __name__ == '__main__':
     countplot_flag=False
     # plot word cloud to see what word are most frequent in the tweets
     wordcloud_flag=False
-    tain_val_split_flag=False
+    tain_val_split_flag=True
     simple_logestic_flag=False
     gridcv_logestic_flag=False
     KNN_flag = False
-    simple_SVM_flag=False
+    simple_SVM_flag=True
     gridcv_SVM_flag=False# it doesn't need train_test split
     NeuralNetworkFlag=False# it doesn't need train_test split
-    optimization_NN_flag=True # it doesn't need train_test split
-    trainData_evaluation_flag=False
+    optimization_NN_flag=False # it doesn't need train_test split
+    trainData_evaluation_flag=True
 
 
     if read_flag:
@@ -179,13 +179,31 @@ if __name__ == '__main__':
         plt.show()
 
     if simple_SVM_flag:
-        clf = svm.SVC(kernel='rbf',C=1)
+        c=1
+        gama=0.1
+        clf = svm.SVC(kernel='rbf',C=c)
         clf.fit(X_tr_vec, y_train)
         y_train_pred_lr = clf.predict(X_tr_vec)
         y_val_pred_lr = clf.predict(X_val_vec)
         tr_acc = accuracy_score(y_train, y_train_pred_lr)
         val_acc = accuracy_score(y_val, y_val_pred_lr)
-        print(f"SVM method \tTrain ACC: {tr_acc}\tVal Acc: {val_acc}")
+        print(f"SVM method with parameter C: {c}\tTrain ACC: {tr_acc}\tVal Acc: {val_acc}")
+        flag_print=False
+        if flag_print:
+            c_values=[0.1, 1, 10]
+            rbf_acc_tr=[0.7644070765,0.915046417936,0.9791557190]
+            rbf_acc_val=[0.7326680672,0.813550420168,0.78046218487]
+            linear_acc_tr=[0.8535645472,0.91154317743,0.94867752]
+            linear_acc_val=[0.81460084033,0.7962184873,0.7463235294]
+            fig = plt.figure(figsize=(6, 4))
+            plt.plot(c_values, rbf_acc_tr, label="Train accuracy of RBF kernel", color="k", linestyle='dashed', marker='*')
+            plt.plot(c_values, rbf_acc_val, label="Validation accuracy of RBF kernel", color="b", marker='*')
+            plt.plot(c_values, linear_acc_tr, label="Train accuracy of Linear kernel",color="r", linestyle='dashed', marker='o')
+            plt.plot(c_values, linear_acc_val, label="Validation accuracy of Linear kernel", color="g", marker='o')
+            plt.xlabel("C")
+            plt.ylabel("Accuracy")
+            plt.legend()
+            plt.show()
 
     if gridcv_SVM_flag:
         lr = svm.SVC(kernel='rbf')
@@ -193,7 +211,8 @@ if __name__ == '__main__':
         X = cv.fit_transform(raw_data.text_clean)
         column_name = cv.get_feature_names_out()
         X_all = pd.DataFrame(X.toarray(), columns=column_name)
-        parameters = {'kernel': ('linear', 'rbf'), 'C': [0.1,1, 10],'gamma': [0.1,1, 10]}
+        parameters = {'kernel': ('linear', 'rbf')}
+        #parameters = {'kernel': ('linear', 'rbf'), 'C': [0.1,1, 10],'gamma': [0.1,1, 10]}
         clf = GridSearchCV(lr, parameters,scoring = "accuracy",cv = 4)
         clf.fit(X_all, y_data)
         print("best Parameter is: {}".format(clf.best_params_))
@@ -296,6 +315,6 @@ if __name__ == '__main__':
         column_name = cv.get_feature_names_out()
         X_test_vec=pd.DataFrame(test_data.toarray(),columns=column_name)
         if ~ NeuralNetworkFlag:
-            out_data["target"]=clf.pridect_classes(X_test_vec)
+            out_data["target"]=clf.predict(X_test_vec)
         print(out_data.head(10))
         out_data.to_csv('./nlp-getting-started/predict.csv', index=False)
