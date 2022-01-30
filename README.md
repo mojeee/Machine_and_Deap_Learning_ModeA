@@ -49,6 +49,9 @@ Files  | Description
 'test.csv'  | Test Data
 'sample_submission.csv'  | Sample of submission file in the kaggle
 'train.csv'  | Train data 
+'Mojtaba_Amini_Submission_file.ipynb'  | The Jupyter notebook file which has been uploaded for grading 
+'Mojtaba_Amini_final_report.pdf'  | PDF file of three pages final report 
+
 
 
 
